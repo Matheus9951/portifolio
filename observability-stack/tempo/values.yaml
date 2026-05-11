@@ -1,0 +1,30 @@
+# ============================================================
+# Tempo — Distributed Tracing
+# ============================================================
+
+tempo:
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: meu-bucket-tempo
+        endpoint: s3.amazonaws.com
+        region: us-east-1
+
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+        http:
+          endpoint: "0.0.0.0:4318"
+    jaeger:
+      protocols:
+        thrift_http:
+          endpoint: "0.0.0.0:14268"
+
+  retention: 336h  # 14 dias
+
+persistence:
+  enabled: true
+  size: 10Gi
