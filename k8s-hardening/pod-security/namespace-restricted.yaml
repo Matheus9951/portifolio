@@ -1,0 +1,22 @@
+# ============================================================
+# Namespace com Pod Security Standards — nível Restricted
+# O nível Restricted é o mais seguro do PSS:
+# - Sem root
+# - Sem privilege escalation
+# - Seccomp obrigatório
+# - Capabilities dropadas
+# ============================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+  labels:
+    # Enforce: rejeita pods que violam a política
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    # Warn: avisa mas não rejeita (útil para migração)
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+    # Audit: registra violações no audit log
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest

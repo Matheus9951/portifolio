@@ -1,0 +1,35 @@
+# ============================================================
+# Role para Desenvolvedores — acesso read-only em produção
+# ============================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: developer
+  namespace: production
+rules:
+  # Pode ver pods, logs e descrever recursos — sem modificar
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "configmaps", "events"]
+    verbs: ["get", "list", "watch"]
+  # Pode ver deployments e replicasets
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets"]
+    verbs: ["get", "list", "watch"]
+  # Pode ver HPA
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: developer-binding
+  namespace: production
+subjects:
+  - kind: Group
+    name: developers   # Grupo no OIDC/SSO
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: developer
+  apiGroup: rbac.authorization.k8s.io

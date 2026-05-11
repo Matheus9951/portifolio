@@ -1,0 +1,62 @@
+# ============================================================
+# ClusterRole para SREs — acesso operacional completo
+# Sem permissão para deletar namespaces ou modificar RBAC
+# ============================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sre-operator
+rules:
+  # Acesso total a workloads
+  - apiGroups: ["", "apps", "batch", "autoscaling"]
+    resources:
+      - pods
+      - pods/log
+      - pods/exec        # Permite kubectl exec para troubleshooting
+      - pods/portforward
+      - deployments
+      - statefulsets
+      - daemonsets
+      - replicasets
+      - jobs
+      - cronjobs
+      - horizontalpodautoscalers
+      - services
+      - endpoints
+      - configmaps
+      - persistentvolumeclaims
+      - events
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # Leitura de secrets (sem criar/deletar)
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+
+  # Acesso a nodes para troubleshooting
+  - apiGroups: [""]
+    resources: ["nodes", "nodes/metrics"]
+    verbs: ["get", "list", "watch"]
+
+  # Métricas
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list"]
+
+  # Ingress
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses", "networkpolicies"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sre-operator-binding
+subjects:
+  - kind: Group
+    name: sre-team
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: sre-operator
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,96 @@
+# ============================================================
+# Regras de Alertas Prometheus — Kubernetes
+# Importar no Prometheus via ConfigMap ou PrometheusRule (CRD)
+# ============================================================
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kubernetes-alerts
+  namespace: monitoring
+  labels:
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    # ── Alertas de Pods ──────────────────────────────────────
+    - name: pods
+      rules:
+        - alert: PodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total[10m]) * 60 > 0.5
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.pod }} em CrashLoopBackOff"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} reiniciou {{ $value | humanize }} vezes por minuto nos últimos 10 minutos."
+            runbook: "https://github.com/Matheus9951/portifolio/blob/main/incident-runbooks/runbooks/pod-crashloopbackoff.md"
+
+        - alert: PodNotReady
+          expr: kube_pod_status_ready{condition="false"} == 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} não está Ready"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} está no estado não-Ready há mais de 10 minutos."
+
+        - alert: PodOOMKilled
+          expr: kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} morto por OOM"
+            description: "Container {{ $labels.container }} no pod {{ $labels.namespace }}/{{ $labels.pod }} foi morto por falta de memória."
+
+    # ── Alertas de Nodes ─────────────────────────────────────
+    - name: nodes
+      rules:
+        - alert: NodeNotReady
+          expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.node }} NotReady"
+            description: "Node {{ $labels.node }} está com status NotReady há mais de 5 minutos."
+            runbook: "https://github.com/Matheus9951/portifolio/blob/main/incident-runbooks/runbooks/node-not-ready.md"
+
+        - alert: NodeDiskPressure
+          expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node {{ $labels.node }} com DiskPressure"
+            description: "Node {{ $labels.node }} está com pressão de disco."
+
+        - alert: NodeHighCPU
+          expr: (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (node)) * 100 > 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "CPU alta no node {{ $labels.node }}"
+            description: "Node {{ $labels.node }} com {{ $value | humanize }}% de CPU por mais de 10 minutos."
+
+        - alert: NodeHighMemory
+          expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Memória alta no node {{ $labels.node }}"
+            description: "Node {{ $labels.node }} com {{ $value | humanize }}% de memória usada."
+
+    # ── Alertas de Deployments ───────────────────────────────
+    - name: deployments
+      rules:
+        - alert: DeploymentReplicasMismatch
+          expr: kube_deployment_spec_replicas != kube_deployment_status_available_replicas
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Deployment {{ $labels.deployment }} com replicas insuficientes"
+            description: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} tem {{ $value }} replicas disponíveis mas deveria ter {{ $labels.spec_replicas }}."

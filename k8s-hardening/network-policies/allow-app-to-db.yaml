@@ -1,0 +1,25 @@
+# ============================================================
+# Permite comunicação: app → banco de dados
+# Apenas pods com label app=meu-app podem acessar o banco
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-app-to-db
+  namespace: production
+spec:
+  # Aplica ao pod do banco de dados
+  podSelector:
+    matchLabels:
+      role: database
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        # Apenas pods da aplicação
+        - podSelector:
+            matchLabels:
+              app: meu-app
+      ports:
+        - protocol: TCP
+          port: 5432   # PostgreSQL — ajuste conforme o banco

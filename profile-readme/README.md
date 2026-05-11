@@ -62,6 +62,10 @@ Possuo experiência prévia como **SRE na OPSteam**, onde aprofundei conheciment
 | [observability-stack](../observability-stack) | Stack completa de observabilidade no Kubernetes | Prometheus, Grafana, Loki, Tempo |
 | [finops-aws-dashboard](../finops-aws-dashboard) | Análise e otimização de custos AWS | Python, AWS Cost Explorer, Boto3 |
 | [vpn-openvpn-aws](../vpn-openvpn-aws) | VPN segura na AWS com OpenVPN via Terraform | Terraform, OpenVPN, EC2 |
+| [k8s-hardening](../k8s-hardening) | Segurança em produção: RBAC, Network Policies, OPA | Kubernetes, OPA/Gatekeeper, PSS |
+| [terraform-aws-landing-zone](../terraform-aws-landing-zone) | Governança e segurança base para conta AWS | Terraform, CloudTrail, GuardDuty, Budgets |
+| [incident-runbooks](../incident-runbooks) | Runbooks SRE + alertas Prometheus prontos para uso | Prometheus, Bash, Kubernetes |
+| [docker-multi-stage-apps](../docker-multi-stage-apps) | Dockerfiles otimizados para produção | Docker, Node.js, Python, Nginx |
 
 ---
 

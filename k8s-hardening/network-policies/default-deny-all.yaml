@@ -1,0 +1,16 @@
+# ============================================================
+# Default Deny — bloqueia TODO tráfego ingress e egress
+# Aplicar em todos os namespaces de produção.
+# Depois liberar apenas o necessário com políticas específicas.
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: production
+spec:
+  podSelector: {}   # Aplica a todos os pods do namespace
+  policyTypes:
+    - Ingress
+    - Egress
+  # Sem regras = tudo bloqueado
